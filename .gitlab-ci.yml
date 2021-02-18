@@ -1,0 +1,37 @@
+image: 
+  name: ${DOCKER_REPO}/softwareplumbers/react-node-centos:0.0.7
+  entrypoint: ["/bin/bash", "-l", "-c"]
+  
+stages:
+  - test
+  - deploy
+  
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .npm/
+
+build:
+  stage: test
+  artifacts:
+    paths:
+      - .npmrc
+      - dist
+  script:
+    - echo ${CI_PROJECT_DIR}
+    - npm set registry https://nexus.softwareplumbers.com/repository/npmjs-public/  
+    - npm-cli-login -r https://nexus.softwareplumbers.com/repository/npmjs-public
+    - npm-cli-login 
+    - cp ~/.npmrc .npmrc
+    - cat .npmrc
+    - npm ci --cache .npm --prefer-offline
+    - npm run build
+    - npm test
+  
+publish:
+  stage: deploy
+  only: 
+    - /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z-]+)?$/
+  script:
+    - npm version --no-git-tag-version ${CI_COMMIT_REF_NAME} 
+    - npm publish
