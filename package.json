@@ -27,6 +27,9 @@
     "registry": "https://nexus.softwareplumbers.com/repository/npm-oss/"
   },
   "dependencies": {
-    "abstract-tokenizer": "^0.0.11"
+    "@softwareplumber/abstract-function": "^0.0.2",
+    "@softwareplumber/abstract-pattern": "^0.0.10",
+    "@softwareplumber/abstract-tokenizer": "^0.0.14",
+    "@softwareplumber/immutable-set": "^0.0.3"
   }
 }
