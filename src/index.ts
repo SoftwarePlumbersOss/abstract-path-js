@@ -1,5 +1,5 @@
-import Path from './path';
+import { Path, PatternPath, MatrixPath, MatrixPattern } from './path';
 
-export { Path };
+export { Path,  PatternPath, MatrixPath, MatrixPattern };
 
 export default Path;
