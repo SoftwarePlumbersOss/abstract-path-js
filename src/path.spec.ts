@@ -19,6 +19,11 @@ test('can head and tail a path', () => {
     expect(path.tail().head()).toBe('b');
 });
 
+test('tail of a path is an instance of path', () => {
+    let path = Path.parse('a/b/c');
+    expect(path.tail()).toBeInstanceOf(Path);
+});
+
 test('parses the empty string as an empty path', () => {
     let path = Path.parse('');
     expect(path.isEmpty()).toBe(true);
@@ -71,6 +76,12 @@ test('parses a path with wildcards', () => {
     expect(path.tail().tail().head().equals(Parsers.parseUnixWildcard('def?.txt'))).toBe(true);
 });
 
+test('tail of a pattern path is an instance of PatternPath', () => {
+    let path = PatternPath.parsePatterns('ab/*/def?.txt');
+    expect(path.tail()).toBeInstanceOf(PatternPath);
+});
+
+
 test('roundtrips a path with wildcards', ()=>{
     let path = PatternPath.parsePatterns('ab/*/def?.txt').toString();
     expect(path).toEqual('ab/*/def?.txt');
@@ -96,6 +107,12 @@ test('parses a matrix path', ()=> {
     expect(path.head().name).toBe('xyz');
     expect(path.head().attr.size).toBe(0);
 });
+
+test('tail of a matrix path is an instance of MatrixPath', () => {
+    let path = MatrixPath.parseMatrixPath('abc;version=1/def;version=2;color=green/xyz');
+    expect(path.tail()).toBeInstanceOf(MatrixPath);
+});
+
 
 test('finds an element in a matrix path', ()=> {
     let path = MatrixPath.parseMatrixPath('abc;version=1/def;version=2;color=green/xyz');
@@ -137,6 +154,11 @@ test('parses a matrix pattern', ()=> {
     path = path.tail();
     expect(path.head().name.equals(Parsers.parseUnixWildcard('xyz'))).toBe(true);
     expect(path.head().attr.size).toBe(0);
+});
+
+test('tail of a matrix pattern path is an instance of MatrixPath', () => {
+    let path = MatrixPathPattern.parseMatrixPattern('abc;version=?/def*;version=2;color=gr*/xyz');
+    expect(path.tail()).toBeInstanceOf(MatrixPathPattern);
 });
 
 test('roundtrips a matrix pattern', ()=> {

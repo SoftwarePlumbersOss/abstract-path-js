@@ -10,6 +10,10 @@ function escapeString(value : string, escape : string, operators : IImmutableSet
     return [...Tokens.fromString(value, '', operators.add(escape))].map(escapeToken).join('');
 }
 
+type PathConstructor<T, P extends Path<T>> = {
+    new (elements: T[]) : P;
+}
+
 export class Path<T> implements Iterable<T> {
 
     private elements: T[]
@@ -44,6 +48,10 @@ export class Path<T> implements Iterable<T> {
         }
     }
 
+    private _createPath(elements : T[]) : this {
+        return new (this.constructor as PathConstructor<T, this>)(elements);
+    }
+
     protected compareElements(a : T, b : T) : boolean {
         return a === b;
     }
@@ -64,32 +72,32 @@ export class Path<T> implements Iterable<T> {
         return this.elements[0];
     }
 
-    tail() : Path<T> {
-        return new Path(this.elements.slice(1));
+    tail() : this {
+        return this._createPath(this.elements.slice(1));
     }
 
-    consume(length : number) : Path<T> {
-        return new Path(this.elements.slice(length));
+    consume(length : number) : this {
+        return this._createPath(this.elements.slice(length));
     }
 
     last() : T {
         return this.elements[this.elements.length-1];
     }
 
-    parent() : Path<T> {
-        return new Path(this.elements.slice(0,-1));
+    parent() : this {
+        return this._createPath(this.elements.slice(0,-1));
     }
 
-    add(...elements : T[]) : Path<T> {
-        return new Path([ ...this.elements, ...elements]);
+    add(...elements : T[]) : this {
+        return this._createPath([ ...this.elements, ...elements]);
     }
 
-    addAll(path : Path<T>) : Path<T> {
+    addAll(path : Path<T>) : this {
         return this.add(...path.elements);        
     }
 
-    prepend(element : T) : Path<T> {
-        return new Path( [element, ...this.elements]);
+    prepend(element : T) : this {
+        return this._createPath( [element, ...this.elements]);
     }
 
     isEmpty() : boolean {
@@ -136,6 +144,10 @@ export class Path<T> implements Iterable<T> {
 
     findIndex(predicate: (elem : T) => boolean) : number {
         return this.elements.findIndex(predicate);
+    }
+
+    slice(begin: number, end: number) : this {
+        return this._createPath(this.elements.slice(begin, end));
     }
 
     toString(escape = '\\', operators = DEFAULT_PATH_OPERATORS) : string {
