@@ -134,6 +134,10 @@ export class Path<T> implements Iterable<T> {
         return this.elements.find(predicate);
     }
 
+    findIndex(predicate: (elem : T) => boolean) : number {
+        return this.elements.findIndex(predicate);
+    }
+
     toString(escape = '\\', operators = DEFAULT_PATH_OPERATORS) : string {
         return [...this].map(element=>escapeString(String(element), escape, operators)).join('/');
     }

@@ -97,6 +97,12 @@ test('parses a matrix path', ()=> {
     expect(path.head().attr.size).toBe(0);
 });
 
+test('finds an element in a matrix path', ()=> {
+    let path = MatrixPath.parseMatrixPath('abc;version=1/def;version=2;color=green/xyz');
+    expect(path.find(element=>element.attr.get('color') === 'green')?.name).toBe('def');
+    expect(path.findIndex(element=>element.attr.get('color') === 'green')).toBe(1);
+});
+
 test('roundtrips a matrix path', ()=> {
     let path = MatrixPath.parseMatrixPath('abc;version=1/def;version=2;color=green/xyz').toString();
     expect(path).toEqual('abc;version=1/def;version=2;color=green/xyz');
