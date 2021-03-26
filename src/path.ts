@@ -165,7 +165,7 @@ export interface PathElement<T> {
     readonly attr : Map<string,T | null>
 }
 
-class StringPathElement implements PathElement<string> {
+export class PathElementString implements PathElement<string> {
     readonly name: string
     readonly attr : Map<string,string | null>
     constructor(name : string, attr: Map<string,string|null>) {
@@ -173,7 +173,7 @@ class StringPathElement implements PathElement<string> {
     }
  }
 
-class PathElementPattern implements PathElement<Pattern>, IPredicate<PathElement<string>> {
+export class PathElementPattern implements PathElement<Pattern>, IPredicate<PathElement<string>> {
     readonly name
     readonly attr
     constructor(name : Pattern, attr: Map<string, Pattern | null>) {
@@ -252,7 +252,7 @@ class MatrixPathBuilder<T, U extends PathElement<T>> implements PathBuilder<T,U>
 export class MatrixPath extends Path<PathElement<string>> {    
     
     static parseMatrixPath(path : string, escape='\\') : Path<PathElement<string>> {
-        let builder = new MatrixPathBuilder<string, StringPathElement>(StringPathElement, t=>t);
+        let builder = new MatrixPathBuilder<string, PathElementString>(PathElementString, t=>t);
         for (let token of Tokens.fromString(path, '\\', MATRIX_PATH_OPERATORS)) {
             if (token.type === TokenType.CHAR_SEQUENCE) builder.addValue(token.data);
             if (token.type === TokenType.OPERATOR) builder.addOperator(token.data);
@@ -275,9 +275,9 @@ export class MatrixPath extends Path<PathElement<string>> {
 
         return [...this].map(mapElement).join('/');
     }
-}
+}  
 
-export class MatrixPattern extends Path<PathElementPattern> {    
+export class MatrixPathPattern extends Path<PathElementPattern> {    
     
     static parseMatrixPattern(path : string, escape='\\') : Path<PathElementPattern> {
         let builder = new MatrixPathBuilder<Pattern,PathElementPattern>(PathElementPattern, pattern=>pattern.build(Builders.toSimplePattern(escape)));
@@ -290,7 +290,7 @@ export class MatrixPattern extends Path<PathElementPattern> {
                 builder.addValue(Parsers.parseUnixWildcard(tokenizer));
             }
         }
-        return new MatrixPattern(builder.build());
+        return new MatrixPathPattern(builder.build());
     }  
 
     toString(escape = '\\', operators = MATRIX_PATTERN_OPERATORS) : string {

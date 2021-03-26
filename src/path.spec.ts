@@ -1,6 +1,6 @@
 /* global expect */
 
-import { Path, PatternPath, MatrixPath, MatrixPattern } from './path';
+import { Path, PatternPath, MatrixPath, MatrixPathPattern } from './path';
 import { Pattern, Parsers } from '@softwareplumber/abstract-pattern';
 
 test('parses a Path', () => {
@@ -121,7 +121,7 @@ test('rountrips a matrix path with escapes', ()=> {
 });
 
 test('parses a matrix pattern', ()=> {
-    let path = MatrixPattern.parseMatrixPattern('abc;version=?/def*;version=2;color=gr*/xyz');
+    let path = MatrixPathPattern.parseMatrixPattern('abc;version=?/def*;version=2;color=gr*/xyz');
     expect(path.head().name.equals(Parsers.parseUnixWildcard('abc'))).toBe(true);
     expect(path.head().attr.get('version')?.equals(Parsers.parseUnixWildcard('?'))).toBe(true);
     path = path.tail();
@@ -134,12 +134,12 @@ test('parses a matrix pattern', ()=> {
 });
 
 test('roundtrips a matrix pattern', ()=> {
-    let path = MatrixPattern.parseMatrixPattern('abc;version=?/def*;version=2;color=gr*/xyz').toString();
+    let path = MatrixPathPattern.parseMatrixPattern('abc;version=?/def*;version=2;color=gr*/xyz').toString();
     expect(path).toEqual('abc;version=?/def*;version=2;color=gr*/xyz');
 });
 
 test('matches a matrix pattern', ()=> {
-    let pattern = MatrixPattern.parseMatrixPattern('abc;version=?/def*;version=2;color=gr*/xyz');
+    let pattern = MatrixPathPattern.parseMatrixPattern('abc;version=?/def*;version=2;color=gr*/xyz');
     let path1 = MatrixPath.parseMatrixPath('abc;version=1/defghi;version=2;color=grey/xyz');
     let path2 = MatrixPath.parseMatrixPath('abc;version=12/defghi;version=2;color=grey/xyz');
     let path3 = MatrixPath.parseMatrixPath('abc;version=1/defghi;version=2;color=black/xyz');
