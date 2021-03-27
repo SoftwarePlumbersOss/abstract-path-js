@@ -101,6 +101,18 @@ test('matches a path with wildcards', () => {
     expect(Path.parse("abc/xyz/def.txt").matches(pattern)).toBe(false);
 });
 
+test('compares pattern paths', () => {
+    let path1 = PatternPath.parsePatterns('a/b/c');
+    let path2 = PatternPath.parsePatterns('a/b/c');
+    let path3 = PatternPath.parsePatterns('*');
+    let path4 = PatternPath.parsePatterns('?');
+    let path5 = PatternPath.parsePatterns('*');
+    expect(path1.equals(path2)).toBe(true);
+    expect(path1.equals(path3)).toBe(false);
+    expect(path1.equals(path4)).toBe(false);
+    expect(path3.equals(path5)).toBe(true);
+});
+
 test('parses a matrix path', ()=> {
     let path = MatrixPath.parseMatrixPath('abc;version=1/def;version=2;color=green/xyz');
     expect(path.head().name).toBe('abc');
@@ -153,6 +165,16 @@ test('parses a matrix path with escapes', ()=> {
 test('rountrips a matrix path with escapes', ()=> {
     let path = MatrixPath.parseMatrixPath('abc\\;version\\=1/def;version=2;color=green/xyz').toString();
     expect(path).toEqual('abc\\;version\\=1/def;version=2;color=green/xyz');
+});
+
+test('compares matrix paths', () => {
+    let path1 = MatrixPath.parseMatrixPath('a/b;v=2/c');
+    let path2 = MatrixPath.parseMatrixPath('a/b;v=2/c');
+    let path3 = MatrixPath.parseMatrixPath('a/b;v=3/c');
+    let path4 = MatrixPath.parseMatrixPath('a/b;v=2/d');
+    expect(path1.equals(path2)).toBe(true);
+    expect(path1.equals(path3)).toBe(false);
+    expect(path1.equals(path4)).toBe(false);
 });
 
 test('parses a matrix pattern', ()=> {

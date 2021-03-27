@@ -174,11 +174,16 @@ export class PatternPath extends Path<Pattern> {
     toString(escape = '\\', operators = DEFAULT_PATTERN_OPERATORS) : string {
         return [...this].map(element=>element.build(Builders.toUnixWildcard(escape, operators))).join('/');
     }
+
+    compareElements(a : Pattern, b: Pattern) : boolean {
+        return a.equals(b);
+    }
 }
 
 export interface PathElement<T> {
     readonly name: T,
     readonly attr : Map<string,T | null>
+    equals(other : PathElement<T>) : boolean;
 }
 
 export class PathElementString implements PathElement<string> {
@@ -189,6 +194,11 @@ export class PathElementString implements PathElement<string> {
     }
     toString() : string {
         return this.name + (this.attr.size > 0 ? ";" + [...this.attr.entries()].map(([name,value])=>`${name}=${value}`).join(';') : "");
+    }
+    equals(other: PathElement<string>) {
+        return this.name === other.name 
+            && this.attr.size === other.attr.size 
+            && [...this.attr.keys()].every((name, index) => this.attr.get(name) === other.attr.get(name));
     }
  }
 
@@ -215,6 +225,19 @@ export class PathElementPattern implements PathElement<Pattern>, IPredicate<Path
                 : ""
             );
     }
+    equals(other: PathElement<Pattern>) {
+        if (this.name === other.name) return true;
+        if (!this.name || !other.name) return false;        
+        return this.name.equals(other.name) 
+            && this.attr.size === other.attr.size 
+            && [...this.attr.keys()].every((name, index) => {
+                const patA = this.attr.get(name);
+                const patB = other.attr.get(name);
+                if (patA === patB) return true;
+                if (!patA || !patB) return false;
+                return patA.equals(patB);
+            });
+    }    
 }
 
 export interface PathBuilder<T, U extends PathElement<T>> {
@@ -303,6 +326,10 @@ export class MatrixPath extends Path<PathElement<string>> {
 
         return [...this].map(mapElement).join('/');
     }
+
+    compareElements(a : PathElement<String>, b : PathElement<String>) : boolean {
+        return a.equals(b);
+    }
 }  
 
 export class MatrixPathPattern extends Path<PathElementPattern> {    
@@ -336,6 +363,10 @@ export class MatrixPathPattern extends Path<PathElementPattern> {
 
         return [...this].map(mapElement).join('/');
     }
+
+    compareElements(a : PathElement<Pattern>, b : PathElement<Pattern>) : boolean {
+        return a.equals(b);
+    }    
 }
 
 export default Path;
