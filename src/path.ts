@@ -187,6 +187,9 @@ export class PathElementString implements PathElement<string> {
     constructor(name : string, attr: Map<string,string|null>) {
         this.name = name; this.attr = attr;
     }
+    toString() : string {
+        return this.name + (this.attr.size > 0 ? ";" + [...this.attr.entries()].map(([name,value])=>`${name}=${value}`).join(';') : "");
+    }
  }
 
 export class PathElementPattern implements PathElement<Pattern>, IPredicate<PathElement<string>> {
@@ -202,6 +205,15 @@ export class PathElementPattern implements PathElement<Pattern>, IPredicate<Path
             if (pattern === null || value === null || value === undefined) return false;
             return pattern.test(value);
         });
+    }
+    toString(escape = '\\', operators = MATRIX_PATH_OPERATORS) : string {
+        return this.name.build(Builders.toUnixWildcard(escape, operators)) 
+            + (this.attr.size > 0 
+                ? ";" + [...this.attr.entries()]
+                    .map(([name,value])=>`${name}=${value?.build(Builders.toUnixWildcard(escape, operators))}`)
+                    .join(';') 
+                : ""
+            );
     }
 }
 
