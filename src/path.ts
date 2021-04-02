@@ -18,26 +18,26 @@ export class Path<T> implements Iterable<T> {
 
     private elements: T[]
 
-    protected constructor(elements : T[] | undefined) {
+    public constructor(elements : T[] | Iterable<T> | undefined) {
         if (elements === undefined) {
             this.elements = []
-        } else {
+        } else if (Array.isArray(elements)) {
             this.elements = elements;
+        } else {
+            this.elements = [ ...elements ];
         }
     }
 
-    static of<T>(elements : Iterable<T>) {
-        return new Path([...elements]);
+    static of<T, P extends Path<T>>(this: PathConstructor<T,P>, ...elements : T[]) {
+        return new this([...elements]);
     }
 
-  
-
-    static parse(path : string) : Path<string> {
-        let elements = [];
+    static parse<T, P extends Path<T>>(this: PathConstructor<T,P>, path : string) : P {
+        let elements : any[]= [];
         for (let token of Tokens.fromString(path, '\\', new Set(['/']))) {
             if (token.type === TokenType.CHAR_SEQUENCE) elements.push(token.data);
         }
-        return new Path(elements);
+        return new this(elements as T[]);
     }
 
     static isPath(object: any) : boolean {
@@ -157,8 +157,8 @@ export class Path<T> implements Iterable<T> {
 
 export class PatternPath extends Path<Pattern> {
 
-    static parsePatterns(path : string) : Path<Pattern> {
-        let elements = [];
+    static parse<T, P extends Path<T>>(this: PathConstructor<T,P>, path : string) : P {
+        let elements : any[] = [];
         let tokenizer = new Tokenizer(path[Symbol.iterator](), '\\', DEFAULT_PATTERN_OPERATORS);
         while (tokenizer.current) {
             if (tokenizer.current.type === TokenType.OPERATOR) {
@@ -168,8 +168,8 @@ export class PatternPath extends Path<Pattern> {
             }
             elements.push(Parsers.parseUnixWildcard(tokenizer));
         }
-        return new PatternPath(elements);
-    } 
+        return new this(elements);
+    }
 
     toString(escape = '\\', operators = DEFAULT_PATTERN_OPERATORS) : string {
         return [...this].map(element=>element.build(Builders.toUnixWildcard(escape, operators))).join('/');
@@ -189,7 +189,7 @@ export interface PathElement<T> {
 export class PathElementString implements PathElement<string> {
     readonly name: string
     readonly attr : Map<string,string | null>
-    constructor(name : string, attr: Map<string,string|null>) {
+    constructor(name : string, attr = new Map<string,string|null>()) {
         this.name = name; this.attr = attr;
     }
     toString() : string {
@@ -205,7 +205,7 @@ export class PathElementString implements PathElement<string> {
 export class PathElementPattern implements PathElement<Pattern>, IPredicate<PathElement<string>> {
     readonly name
     readonly attr
-    constructor(name : Pattern, attr: Map<string, Pattern | null>) {
+    constructor(name : Pattern, attr = new Map<string, Pattern | null>()) {
         this.name = name; this.attr = attr;
     }
     test(target : PathElement<string>) : boolean {
@@ -302,13 +302,13 @@ class MatrixPathBuilder<T, U extends PathElement<T>> implements PathBuilder<T,U>
 
 export class MatrixPath extends Path<PathElement<string>> {    
     
-    static parseMatrixPath(path : string, escape='\\') : Path<PathElement<string>> {
+    static parse<T, P extends Path<T>>(this: PathConstructor<T,P>, path : string, escape = '\\') : P {
         let builder = new MatrixPathBuilder<string, PathElementString>(PathElementString, t=>t);
-        for (let token of Tokens.fromString(path, '\\', MATRIX_PATH_OPERATORS)) {
+        for (let token of Tokens.fromString(path, escape, MATRIX_PATH_OPERATORS)) {
             if (token.type === TokenType.CHAR_SEQUENCE) builder.addValue(token.data);
             if (token.type === TokenType.OPERATOR) builder.addOperator(token.data);
         }
-        return new MatrixPath(builder.build());
+        return new this(builder.build() as any[]);
     }  
 
     toString(escape = '\\', operators = MATRIX_PATH_OPERATORS) : string {
@@ -327,14 +327,14 @@ export class MatrixPath extends Path<PathElement<string>> {
         return [...this].map(mapElement).join('/');
     }
 
-    compareElements(a : PathElement<String>, b : PathElement<String>) : boolean {
+    compareElements(a : PathElement<string>, b : PathElement<string>) : boolean {
         return a.equals(b);
     }
 }  
 
 export class MatrixPathPattern extends Path<PathElementPattern> {    
     
-    static parseMatrixPattern(path : string, escape='\\') : Path<PathElementPattern> {
+    static parse<T, P extends Path<T>>(this: PathConstructor<T,P>, path : string, escape = '\\') : P {
         let builder = new MatrixPathBuilder<Pattern,PathElementPattern>(PathElementPattern, pattern=>pattern.build(Builders.toSimplePattern(escape)));
         let tokenizer = new Tokenizer(path[Symbol.iterator](), escape, MATRIX_PATTERN_OPERATORS);
         while (tokenizer.current) {
@@ -345,7 +345,7 @@ export class MatrixPathPattern extends Path<PathElementPattern> {
                 builder.addValue(Parsers.parseUnixWildcard(tokenizer));
             }
         }
-        return new MatrixPathPattern(builder.build());
+        return new this(builder.build() as any[]);
     }  
 
     toString(escape = '\\', operators = MATRIX_PATTERN_OPERATORS) : string {
@@ -364,7 +364,7 @@ export class MatrixPathPattern extends Path<PathElementPattern> {
         return [...this].map(mapElement).join('/');
     }
 
-    compareElements(a : PathElement<Pattern>, b : PathElement<Pattern>) : boolean {
+    compareElements(a : PathElementPattern, b : PathElementPattern) : boolean {
         return a.equals(b);
     }    
 }
