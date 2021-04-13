@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@softwareplumber/abstract-function": "^0.0.3",
-    "@softwareplumber/abstract-pattern": "^0.0.12",
+    "@softwareplumber/abstract-pattern": "^0.0.13",
     "@softwareplumber/abstract-tokenizer": "^0.0.16",
     "@softwareplumber/immutable-set": "^0.0.5"
   }
